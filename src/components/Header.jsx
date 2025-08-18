@@ -1,5 +1,6 @@
 import React from "react";
-import logo from "../assets/little-lemon-logo.png"; // put your logo here
+import logo from "../assets/little-lemon-logo.jpg";
+
 
 function Header() {
   return (
