@@ -1,18 +1,16 @@
-import React from "react";
+import { NavLink } from "react-router-dom";
 
-function Nav() {
+export default function Nav() {
   return (
     <nav aria-label="Primary">
       <ul>
-        <li><a href="/">Home</a></li>
-        <li><a href="/about">About</a></li>
-        <li><a href="/menu">Menu</a></li>
-        <li><a href="/reservations">Reservations</a></li>
-        <li><a href="/order-online">Order Online</a></li>
-        <li><a href="/login">Login</a></li>
+        <li><NavLink to="/" end className={({isActive}) => isActive ? "active" : undefined}>Home</NavLink></li>
+        <li><a href="/about">About</a></li>{/* stub until you add route */}
+        <li><a href="/menu">Menu</a></li>{/* stub */}
+        <li><NavLink to="/booking" className={({isActive}) => isActive ? "active" : undefined}>Reservations</NavLink></li>
+        <li><a href="/order-online">Order Online</a></li>{/* stub */}
+        <li><a href="/login">Login</a></li>{/* stub */}
       </ul>
     </nav>
   );
 }
-
-export default Nav;
