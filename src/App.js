@@ -1,34 +1,28 @@
+// src/App.js
 import { Routes, Route } from "react-router-dom";
 import Nav from "./components/Nav";
 import HomePage from "./pages/HomePage";
 import BookingPage from "./pages/BookingPage";
+import BookingConfirm from "./pages/BookingConfirm"; // ← NEW
 
 export default function App() {
   return (
     <div className="container">
       <header aria-label="Site Header">
-        {/* Your logo can be inside Nav or here; pick one to avoid duplication */}
         <Nav />
       </header>
-
-      {/* Optional: separate <nav> area if your grid expects it
-      <nav aria-label="Primary Navigation"><Nav /></nav>
-      */}
 
       <main id="content">
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/booking" element={<BookingPage />} />
-          {/* Add more routes as you build pages */}
+          <Route path="/booking/confirm" element={<BookingConfirm />} /> {/* ← NEW */}
         </Routes>
       </main>
 
-      <aside>
-        {/* Optional: sidebar content (specials promo, hours, etc.) */}
-      </aside>
+      <aside>{/* sidebar or specials if you need it */}</aside>
 
       <footer>
-        {/* Your Footer component here */}
         <small>© Little Lemon</small>
       </footer>
     </div>
