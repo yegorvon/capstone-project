@@ -1,3 +1,4 @@
+// src/reservations/BookingForm.jsx
 import { useState, useRef } from "react";
 
 const initial = {
@@ -9,16 +10,22 @@ const initial = {
   notes: ""
 };
 
-export default function BookingForm({ onSubmit }) {
+export default function BookingForm({ onSubmit, availableTimes = [], onDateChange }) {
   const [form, setForm] = useState(initial);
   const [errors, setErrors] = useState({});
-  const [availableTimes] = useState(["17:00", "18:00", "19:00", "20:00", "21:00"]);
   const live = useRef(null);
 
   const update = (e) => {
     const { name, value } = e.target;
-    setForm(f => ({ ...f, [name]: name === "guests" ? Number(value) : value }));
-    if (errors[name]) setErrors(prev => ({ ...prev, [name]: undefined }));
+    setForm((f) => ({ ...f, [name]: name === "guests" ? Number(value) : value }));
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: undefined }));
+  };
+
+  const handleDate = (e) => {
+    update(e);
+    if (onDateChange) onDateChange(e.target.value); // lift date
+    // Reset chosen time when date changes (optional UX)
+    setForm((f) => ({ ...f, time: "" }));
   };
 
   const validate = () => {
@@ -42,40 +49,93 @@ export default function BookingForm({ onSubmit }) {
   };
 
   return (
-    <form onSubmit={submit} style={{ display: "grid", maxWidth: 320, gap: 12 }}>
-      <div ref={live} role="status" aria-live="polite" style={{ position: "absolute", left: "-9999px" }} />
+    <form onSubmit={submit} className="ll-form">
+      <div ref={live} role="status" aria-live="polite" className="sr-only" />
 
-      <label htmlFor="res-date">Choose date *</label>
-      <input id="res-date" name="date" type="date" value={form.date} onChange={update} aria-invalid={!!errors.date} required />
-      {errors.date && <div role="alert">{errors.date}</div>}
+      <h2 className="ll-form__title">Reserve a Table</h2>
 
-      <label htmlFor="res-time">Choose time *</label>
-      <select id="res-time" name="time" value={form.time} onChange={update} aria-invalid={!!errors.time} required>
-        <option value="">Select…</option>
-        {availableTimes.map(t => <option key={t} value={t}>{t}</option>)}
-      </select>
-      {errors.time && <div role="alert">{errors.time}</div>}
+      <div className="ll-form__grid">
+        <div className="field">
+          <label htmlFor="res-date">Choose date *</label>
+          <input
+            id="res-date"
+            name="date"
+            type="date"
+            value={form.date}
+            onChange={handleDate}
+            aria-invalid={!!errors.date}
+            required
+          />
+          {errors.date && <div role="alert" className="error">{errors.date}</div>}
+        </div>
 
-      <label htmlFor="guests">Number of guests (1–12) *</label>
-      <input id="guests" name="guests" type="number" min="1" max="12" value={form.guests} onChange={update} aria-invalid={!!errors.guests} required />
-      {errors.guests && <div role="alert">{errors.guests}</div>}
+        <div className="field">
+          <label htmlFor="res-time">Choose time *</label>
+          <select
+            id="res-time"
+            name="time"
+            value={form.time}
+            onChange={update}
+            aria-invalid={!!errors.time}
+            required
+            disabled={!form.date} /* block until date picked */
+          >
+            <option value="">Select…</option>
+            {availableTimes.map((t) => (
+              <option key={t} value={t}>{t}</option>
+            ))}
+          </select>
+          {errors.time && <div role="alert" className="error">{errors.time}</div>}
+        </div>
 
-      <label htmlFor="occasion">Occasion</label>
-      <select id="occasion" name="occasion" value={form.occasion} onChange={update}>
-        <option>Birthday</option>
-        <option>Anniversary</option>
-      </select>
+        <div className="field">
+          <label htmlFor="guests">Number of guests (1–12) *</label>
+          <input
+            id="guests"
+            name="guests"
+            type="number"
+            min="1"
+            max="12"
+            value={form.guests}
+            onChange={update}
+            aria-invalid={!!errors.guests}
+            required
+          />
+          {errors.guests && <div role="alert" className="error">{errors.guests}</div>}
+        </div>
 
-      <fieldset>
-        <legend>Seating preference</legend>
-        <label><input type="radio" name="seating" value="indoor" checked={form.seating==="indoor"} onChange={update}/> Indoor</label>
-        <label><input type="radio" name="seating" value="outdoor" checked={form.seating==="outdoor"} onChange={update}/> Outdoor</label>
-      </fieldset>
+        <div className="field">
+          <label htmlFor="occasion">Occasion</label>
+          <select id="occasion" name="occasion" value={form.occasion} onChange={update}>
+            <option>Birthday</option>
+            <option>Anniversary</option>
+          </select>
+        </div>
 
-      <label htmlFor="notes">Notes</label>
-      <textarea id="notes" name="notes" value={form.notes} onChange={update} placeholder="Allergies, high chair, etc." />
+        <fieldset className="field field--full">
+          <legend>Seating preference</legend>
+          <label className="choice">
+            <input type="radio" name="seating" value="indoor" checked={form.seating === "indoor"} onChange={update} /> Indoor
+          </label>
+          <label className="choice">
+            <input type="radio" name="seating" value="outdoor" checked={form.seating === "outdoor"} onChange={update} /> Outdoor
+          </label>
+        </fieldset>
 
-      <button type="submit">Make Your reservation</button>
+        <div className="field field--full">
+          <label htmlFor="notes">Notes</label>
+          <textarea
+            id="notes"
+            name="notes"
+            value={form.notes}
+            onChange={update}
+            placeholder="Allergies, high chair, etc."
+            rows={3}
+          />
+        </div>
+      </div>
+
+      <button type="submit" className="btn ll-btn">Make Your reservation</button>
     </form>
   );
 }

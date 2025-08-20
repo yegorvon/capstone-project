@@ -51,3 +51,21 @@ label { font-weight: 600; }
 input, select, textarea, button { padding: .5rem; border-radius: .4rem; border: 1px solid #ccc; }
 button { cursor: pointer; font-weight: 700; }
 nav a.active { color: var(--color-secondary); border-bottom: 2px solid var(--color-secondary); }
+/* Slots badges */
+.badge{
+  display:inline-block;
+  padding:.4rem .7rem;
+  border-radius:999px;
+  font-weight:700;
+  font-size:.95rem;
+}
+.badge--ok{
+  background: linear-gradient(90deg,#fdf5b0,#f4ce14);
+  color:#111;
+  border:1px solid rgba(0,0,0,.08);
+}
+.badge--muted{
+  background:#e5e7eb;
+  color:#555;
+  border:1px solid rgba(0,0,0,.06);
+}
