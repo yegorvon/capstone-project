@@ -1,8 +1,8 @@
-// src/pages/BookingConfirm.jsx
+// src/pages/ConfirmedBooking.jsx
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
 
-export default function BookingConfirm() {
+export default function ConfirmedBooking() {
   const last = useMemo(() => {
     try {
       const raw = sessionStorage.getItem("lastReservation");
@@ -15,7 +15,7 @@ export default function BookingConfirm() {
   return (
     <section style={{ padding: "1rem" }}>
       <h1>Booking Confirmed 🎉</h1>
-      <p>Your table has been reserved. We look forward to seeing you at Little Lemon.</p>
+      <p>Your table has been reserved. We look forward to serving you at Little Lemon.</p>
 
       {last ? (
         <div
@@ -39,7 +39,7 @@ export default function BookingConfirm() {
         </div>
       ) : (
         <p style={{ marginTop: "1rem" }}>
-          We couldn’t find the booking details (maybe you reloaded).
+          (We couldn’t find the booking details—maybe the page was reloaded. That’s okay!)
         </p>
       )}
 

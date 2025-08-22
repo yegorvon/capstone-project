@@ -1,8 +1,8 @@
 // src/reservations/BookingForm.jsx
-import { useState, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const initial = {
-  date: "",
+  date: new Date().toISOString().slice(0, 10), // "YYYY-MM-DD"
   time: "",
   guests: 2,
   occasion: "Birthday",
@@ -15,6 +15,22 @@ export default function BookingForm({ onSubmit, availableTimes = [], onDateChang
   const [errors, setErrors] = useState({});
   const live = useRef(null);
 
+  useEffect(() => {
+    onDateChange?.(initial.date);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (availableTimes.length === 0) {
+      if (form.time) setForm((f) => ({ ...f, time: "" }));
+      return;
+    }
+    if (!availableTimes.includes(form.time)) {
+      setForm((f) => ({ ...f, time: availableTimes[0] }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [availableTimes]);
+
   const update = (e) => {
     const { name, value } = e.target;
     setForm((f) => ({ ...f, [name]: name === "guests" ? Number(value) : value }));
@@ -23,8 +39,7 @@ export default function BookingForm({ onSubmit, availableTimes = [], onDateChang
 
   const handleDate = (e) => {
     update(e);
-    if (onDateChange) onDateChange(e.target.value); // lift date
-    // Reset chosen time when date changes (optional UX)
+    onDateChange?.(e.target.value);
     setForm((f) => ({ ...f, time: "" }));
   };
 
@@ -42,6 +57,11 @@ export default function BookingForm({ onSubmit, availableTimes = [], onDateChang
     setErrors(e);
     if (Object.keys(e).length) {
       if (live.current) live.current.textContent = "Form has errors.";
+      return;
+    }
+    if (!availableTimes.includes(form.time)) {
+      if (live.current) live.current.textContent = "Selected time is no longer available.";
+      alert("That time is no longer available. Please pick another.");
       return;
     }
     if (live.current) live.current.textContent = "Submitting…";
@@ -65,6 +85,7 @@ export default function BookingForm({ onSubmit, availableTimes = [], onDateChang
             onChange={handleDate}
             aria-invalid={!!errors.date}
             required
+            min={new Date().toISOString().slice(0, 10)}
           />
           {errors.date && <div role="alert" className="error">{errors.date}</div>}
         </div>
@@ -78,9 +99,9 @@ export default function BookingForm({ onSubmit, availableTimes = [], onDateChang
             onChange={update}
             aria-invalid={!!errors.time}
             required
-            disabled={!form.date} /* block until date picked */
+            disabled={!form.date || availableTimes.length === 0}
           >
-            <option value="">Select…</option>
+            <option value="">{availableTimes.length ? "Select…" : "No times available"}</option>
             {availableTimes.map((t) => (
               <option key={t} value={t}>{t}</option>
             ))}
@@ -109,16 +130,31 @@ export default function BookingForm({ onSubmit, availableTimes = [], onDateChang
           <select id="occasion" name="occasion" value={form.occasion} onChange={update}>
             <option>Birthday</option>
             <option>Anniversary</option>
+            <option>None</option>
           </select>
         </div>
 
         <fieldset className="field field--full">
           <legend>Seating preference</legend>
           <label className="choice">
-            <input type="radio" name="seating" value="indoor" checked={form.seating === "indoor"} onChange={update} /> Indoor
+            <input
+              type="radio"
+              name="seating"
+              value="indoor"
+              checked={form.seating === "indoor"}
+              onChange={update}
+            />{" "}
+            Indoor
           </label>
           <label className="choice">
-            <input type="radio" name="seating" value="outdoor" checked={form.seating === "outdoor"} onChange={update} /> Outdoor
+            <input
+              type="radio"
+              name="seating"
+              value="outdoor"
+              checked={form.seating === "outdoor"}
+              onChange={update}
+            />{" "}
+            Outdoor
           </label>
         </fieldset>
 

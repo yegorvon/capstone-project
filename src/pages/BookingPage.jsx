@@ -1,36 +1,47 @@
-
 import { useReducer, useMemo } from "react";
 import BookingForm from "../reservations/BookingForm";
 import BookingSlots from "../reservations/BookingSlots";
+import { getAvailableTimes } from "../reservations/api";
+function parseFlexibleDate(value) {
+  if (!value) return null;
+  if (value.includes("-")) {
+    const [y, m, d] = value.split("-").map(Number);
+    return new Date(y, m - 1, d);
+  }
+  if (value.includes("/")) {
+    const [d, m, y] = value.split("/").map(Number);
+    return new Date(y, m - 1, d);
+  }
+  const dt = new Date(value);
+  return isNaN(dt.getTime()) ? null : dt;
+}
 
-const ALL_TIMES = ["17:00", "18:00", "19:00", "20:00", "21:00"];
-
+function formatDateLabel(yyyyMmDd) {
+  if (!yyyyMmDd) return "—";
+  const dt = parseFlexibleDate(yyyyMmDd);
+  return dt ? dt.toDateString() : "—";
+}
 function initializeTimes() {
-
   return {
     date: "",
-    available: ALL_TIMES,
-    booked: [] 
+    available: getAvailableTimes(new Date()),
+    booked: []
   };
 }
 
 function updateTimes(state, action) {
   switch (action.type) {
     case "date": {
-    
-      return {
-        date: action.date,
-        available: ALL_TIMES,
-        booked: []
-      };
+      const dateObj = parseFlexibleDate(action.date);
+      const available = dateObj ? getAvailableTimes(dateObj) : [];
+      return { date: action.date, available, booked: [] };
     }
     case "book": {
-   
       const t = action.time;
-      if (!state.available.includes(t)) return state; 
+      if (!state.available.includes(t)) return state;
       return {
         ...state,
-        available: state.available.filter(x => x !== t),
+        available: state.available.filter((x) => x !== t),
         booked: [...state.booked, t]
       };
     }
@@ -39,7 +50,7 @@ function updateTimes(state, action) {
   }
 }
 
-export default function BookingPage() {
+export default function BookingPage({ submitForm }) {
   const [timesState, dispatch] = useReducer(updateTimes, undefined, initializeTimes);
 
   const handleDateChange = (date) => {
@@ -47,18 +58,20 @@ export default function BookingPage() {
   };
 
   const handleSubmit = async (payload) => {
-  
-    await new Promise((r) => setTimeout(r, 250));
-  
-    dispatch({ type: "book", time: payload.time });
-
-    sessionStorage.setItem("lastReservation", JSON.stringify(payload));
-   
-    window.location.assign("/booking/confirm");
+    if (!timesState.available.includes(payload.time)) {
+      alert("That time is no longer available. Please pick another.");
+      return;
+    }
+    const ok = await submitForm?.(payload);
+    if (ok) {
+      dispatch({ type: "book", time: payload.time }); // optimistic local update
+    } else {
+      alert("Could not submit reservation. Please try again.");
+    }
   };
 
   const selectedDateCopy = useMemo(
-    () => (timesState.date ? new Date(timesState.date).toDateString() : "—"),
+    () => formatDateLabel(timesState.date),
     [timesState.date]
   );
 
@@ -73,7 +86,6 @@ export default function BookingPage() {
         onSubmit={handleSubmit}
       />
 
-      {}
       <BookingSlots
         dateLabel={selectedDateCopy}
         available={timesState.available}
