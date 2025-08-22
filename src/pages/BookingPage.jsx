@@ -94,3 +94,5 @@ export default function BookingPage({ submitForm }) {
     </section>
   );
 }
+
+export { initializeTimes, updateTimes, parseFlexibleDate };
